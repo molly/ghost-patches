@@ -1,0 +1,112 @@
+diff --git a/apps/comments-ui/src/components/Frame.tsx b/apps/comments-ui/src/components/Frame.tsx
+index cb692c37d6..41bbe250c1 100644
+--- a/apps/comments-ui/src/components/Frame.tsx
++++ b/apps/comments-ui/src/components/Frame.tsx
+@@ -1,5 +1,6 @@
+ import IFrame from './IFrame';
+ import React, {useCallback, useState} from 'react';
++import fontStyles from '../styles/fonts.css?inline';
+ import styles from '../styles/iframe.css?inline';
+ 
+ type FrameProps = {
+@@ -18,7 +19,7 @@ type TailwindFrameProps = FrameProps & {
+ const TailwindFrame: React.FC<TailwindFrameProps> = ({children, onResize, style, title}) => {
+     const head = (
+         <>
+-            <style dangerouslySetInnerHTML={{__html: styles}} />
++            <style dangerouslySetInnerHTML={{__html: fontStyles + styles}} />
+             <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport" />
+         </>
+     );
+diff --git a/apps/comments-ui/src/components/content/Avatar.tsx b/apps/comments-ui/src/components/content/Avatar.tsx
+index 149e89a8c8..a51611b43e 100644
+--- a/apps/comments-ui/src/components/content/Avatar.tsx
++++ b/apps/comments-ui/src/components/content/Avatar.tsx
+@@ -1,5 +1,6 @@
+ import {ReactComponent as AvatarIcon} from '../../images/icons/avatar.svg';
+ import {Comment, useAppContext} from '../../AppContext';
++import {MOLLY_IDS} from '../../utils/constants';
+ import {getInitials} from '../../utils/helpers';
+ 
+ function getDimensionClasses() {
+@@ -84,6 +85,14 @@ export const Avatar: React.FC<AvatarProps> = ({comment}) => {
+         background: bgColor
+     };
+ 
++    const getAvatarImage = () => {
++        let avatarImage = commentMember.avatar_image;
++        if (MOLLY_IDS.includes(commentMember.uuid)) {
++            avatarImage = "/content/images/size/w160/2023/12/molly-sq.jpeg" 
++        }
++        return avatarImage;
++    }
++
+     const avatarEl = (
+         <>
+             {memberName ?
+@@ -93,7 +102,7 @@ export const Avatar: React.FC<AvatarProps> = ({comment}) => {
+                 (<div className={`flex items-center justify-center rounded-full bg-neutral-900 dark:bg-[rgba(255,255,255,0.7)] ${dimensionClasses}`} data-testid="avatar-background" >
+                     <AvatarIcon className="stroke-white dark:stroke-[rgba(0,0,0,0.6)]" />
+                 </div>)}
+-            {commentMember && <img alt="Avatar" className={`absolute left-0 top-0 rounded-full ${dimensionClasses}`} src={commentMember.avatar_image}/>}
++            {commentMember && <img alt="Avatar" className={`absolute left-0 top-0 rounded-full ${dimensionClasses}`} src={ getAvatarImage() }/>}
+         </>
+     );
+ 
+diff --git a/apps/comments-ui/src/components/content/Comment.tsx b/apps/comments-ui/src/components/content/Comment.tsx
+index efd01664ad..9e63264f1f 100644
+--- a/apps/comments-ui/src/components/content/Comment.tsx
++++ b/apps/comments-ui/src/components/content/Comment.tsx
+@@ -7,6 +7,7 @@ import ReplyForm from './forms/ReplyForm';
+ import {Avatar, BlankAvatar} from './Avatar';
+ import {Comment, useAppContext} from '../../AppContext';
+ import {Transition} from '@headlessui/react';
++import {MOLLY_IDS} from '../../utils/constants';
+ import {formatExplicitTime, isCommentPublished} from '../../utils/helpers';
+ import {useRelativeTime} from '../../utils/hooks';
+ import {useState} from 'react';
+@@ -133,12 +134,17 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
+ 
+ const MemberExpertise: React.FC<{comment: Comment}> = ({comment}) => {
+     const {member} = useAppContext();
+-    const memberExpertise = member && comment.member && comment.member.uuid === member.uuid ? member.expertise : comment?.member?.expertise;
++    let memberExpertise = member && comment.member && comment.member.uuid === member.uuid ? member.expertise : comment?.member?.expertise;
++    const isMolly = comment.member && comment.member.uuid && MOLLY_IDS.includes(comment.member.uuid);
+ 
+     if (!memberExpertise) {
+         return null;
+     }
+ 
++    if (isMolly) {
++        memberExpertise = <span className="px-1 py-[2px] rounded-sm bg-[rgba(0,0,0,0.085)] dark:bg-[rgba(255,255,255,0.15)]">{memberExpertise}</span>;
++    }
++
+     return (
+         <span className="[overflow-wrap:anywhere]">{memberExpertise}<span className="mx-[0.3em]">·</span></span>
+     );
+diff --git a/apps/comments-ui/src/components/content/ContentTitle.tsx b/apps/comments-ui/src/components/content/ContentTitle.tsx
+index 30fcac08de..0ebb39cbef 100644
+--- a/apps/comments-ui/src/components/content/ContentTitle.tsx
++++ b/apps/comments-ui/src/components/content/ContentTitle.tsx
+@@ -48,7 +48,7 @@ const ContentTitle: React.FC<ContentTitleProps> = ({title, showCount, count}) =>
+ 
+     return (
+         <div className="mb-8 flex w-full items-baseline justify-between font-sans">
+-            <h2 className="text-[2.8rem] font-bold tracking-tight dark:text-[rgba(255,255,255,0.85)]" data-testid="title">
++            <h2 className="text-[2.8rem] font-display tracking-tight dark:text-[rgba(255,255,255,0.85)]" data-testid="title">
+                 <Title title={title}/>
+             </h2>
+             <Count count={count} showCount={showCount} />
+diff --git a/apps/comments-ui/src/utils/constants.ts b/apps/comments-ui/src/utils/constants.ts
+index 00121f352e..69548c06f1 100644
+--- a/apps/comments-ui/src/utils/constants.ts
++++ b/apps/comments-ui/src/utils/constants.ts
+@@ -1,2 +1,7 @@
+ // Note: do not use ghost-comments as that makes the #ghost-comments scrolling unreliable because we inject this div after page load!
+ export const ROOT_DIV_ID = 'ghost-comments-root';
++
++export const MOLLY_IDS = [
++  "6d781564-c4d2-4171-9d83-7ee7f3550b7b", // Prod
++  "0cb55a56-7e22-4d14-aaa2-4a4e61bfcb5a" // Dev
++];
+\ No newline at end of file
