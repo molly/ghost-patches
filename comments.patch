@@ -1,5 +1,5 @@
 diff --git a/apps/comments-ui/src/components/Frame.tsx b/apps/comments-ui/src/components/Frame.tsx
-index cb692c37d6..41bbe250c1 100644
+index 64c898d602..ffd5c2433e 100644
 --- a/apps/comments-ui/src/components/Frame.tsx
 +++ b/apps/comments-ui/src/components/Frame.tsx
 @@ -1,5 +1,6 @@
@@ -10,7 +10,7 @@ index cb692c37d6..41bbe250c1 100644
  
  type FrameProps = {
 @@ -18,7 +19,7 @@ type TailwindFrameProps = FrameProps & {
- const TailwindFrame: React.FC<TailwindFrameProps> = ({children, onResize, style, title}) => {
+ const TailwindFrame = React.forwardRef<HTMLIFrameElement, React.PropsWithChildren<TailwindFrameProps>>(function TailwindFrame({children, onResize, style, title}, ref: React.ForwardedRef<HTMLIFrameElement>) {
      const head = (
          <>
 -            <style dangerouslySetInnerHTML={{__html: styles}} />
@@ -19,16 +19,17 @@ index cb692c37d6..41bbe250c1 100644
          </>
      );
 diff --git a/apps/comments-ui/src/components/content/Avatar.tsx b/apps/comments-ui/src/components/content/Avatar.tsx
-index 149e89a8c8..a51611b43e 100644
+index 149e89a8c8..84c223d443 100644
 --- a/apps/comments-ui/src/components/content/Avatar.tsx
 +++ b/apps/comments-ui/src/components/content/Avatar.tsx
-@@ -1,5 +1,6 @@
+@@ -1,6 +1,7 @@
  import {ReactComponent as AvatarIcon} from '../../images/icons/avatar.svg';
  import {Comment, useAppContext} from '../../AppContext';
-+import {MOLLY_IDS} from '../../utils/constants';
  import {getInitials} from '../../utils/helpers';
++import {MOLLY_IDS} from '../../utils/constants'
  
  function getDimensionClasses() {
+     return 'w-9 h-9 sm:w-[40px] sm:h-[40px]';
 @@ -84,6 +85,14 @@ export const Avatar: React.FC<AvatarProps> = ({comment}) => {
          background: bgColor
      };
@@ -36,10 +37,10 @@ index 149e89a8c8..a51611b43e 100644
 +    const getAvatarImage = () => {
 +        let avatarImage = commentMember.avatar_image;
 +        if (MOLLY_IDS.includes(commentMember.uuid)) {
-+            avatarImage = "/content/images/size/w160/2023/12/molly-sq.jpeg" 
++            avatarImage = '/content/images/size/w160/2023/12/molly-sq.jpeg'; 
 +        }
 +        return avatarImage;
-+    }
++    };
 +
      const avatarEl = (
          <>
@@ -49,12 +50,12 @@ index 149e89a8c8..a51611b43e 100644
                      <AvatarIcon className="stroke-white dark:stroke-[rgba(0,0,0,0.6)]" />
                  </div>)}
 -            {commentMember && <img alt="Avatar" className={`absolute left-0 top-0 rounded-full ${dimensionClasses}`} src={commentMember.avatar_image}/>}
-+            {commentMember && <img alt="Avatar" className={`absolute left-0 top-0 rounded-full ${dimensionClasses}`} src={ getAvatarImage() }/>}
++            {commentMember && <img alt="Avatar" className={`absolute left-0 top-0 rounded-full ${dimensionClasses}`} src={getAvatarImage()}/>}
          </>
      );
  
 diff --git a/apps/comments-ui/src/components/content/Comment.tsx b/apps/comments-ui/src/components/content/Comment.tsx
-index efd01664ad..9e63264f1f 100644
+index efd01664ad..bd9904a162 100644
 --- a/apps/comments-ui/src/components/content/Comment.tsx
 +++ b/apps/comments-ui/src/components/content/Comment.tsx
 @@ -7,6 +7,7 @@ import ReplyForm from './forms/ReplyForm';
@@ -78,14 +79,14 @@ index efd01664ad..9e63264f1f 100644
      }
  
 +    if (isMolly) {
-+        memberExpertise = <span className="px-1 py-[2px] rounded-sm bg-[rgba(0,0,0,0.085)] dark:bg-[rgba(255,255,255,0.15)]">{memberExpertise}</span>;
++        memberExpertise = <span className="rounded-sm bg-[rgba(0,0,0,0.085)] px-1 py-[2px] dark:bg-[rgba(255,255,255,0.15)]">{memberExpertise}</span>;
 +    }
 +
      return (
          <span className="[overflow-wrap:anywhere]">{memberExpertise}<span className="mx-[0.3em]">·</span></span>
      );
 diff --git a/apps/comments-ui/src/components/content/ContentTitle.tsx b/apps/comments-ui/src/components/content/ContentTitle.tsx
-index 30fcac08de..0ebb39cbef 100644
+index 30fcac08de..7d28632f65 100644
 --- a/apps/comments-ui/src/components/content/ContentTitle.tsx
 +++ b/apps/comments-ui/src/components/content/ContentTitle.tsx
 @@ -48,7 +48,7 @@ const ContentTitle: React.FC<ContentTitleProps> = ({title, showCount, count}) =>
@@ -93,25 +94,24 @@ index 30fcac08de..0ebb39cbef 100644
      return (
          <div className="mb-8 flex w-full items-baseline justify-between font-sans">
 -            <h2 className="text-[2.8rem] font-bold tracking-tight dark:text-[rgba(255,255,255,0.85)]" data-testid="title">
-+            <h2 className="text-[2.8rem] font-display tracking-tight dark:text-[rgba(255,255,255,0.85)]" data-testid="title">
++            <h2 className="font-display text-[2.8rem] tracking-tight dark:text-[rgba(255,255,255,0.85)]" data-testid="title">
                  <Title title={title}/>
              </h2>
              <Count count={count} showCount={showCount} />
 diff --git a/apps/comments-ui/src/utils/constants.ts b/apps/comments-ui/src/utils/constants.ts
-index 00121f352e..69548c06f1 100644
+index 00121f352e..db2aafcf43 100644
 --- a/apps/comments-ui/src/utils/constants.ts
 +++ b/apps/comments-ui/src/utils/constants.ts
-@@ -1,2 +1,7 @@
+@@ -1,2 +1,6 @@
  // Note: do not use ghost-comments as that makes the #ghost-comments scrolling unreliable because we inject this div after page load!
- export const ROOT_DIV_ID = 'ghost-comments-root';
-+
+-export const ROOT_DIV_ID = 'ghost-comments-root';
++export const ROOT_DIV_ID = "ghost-comments-root";
 +export const MOLLY_IDS = [
 +  "6d781564-c4d2-4171-9d83-7ee7f3550b7b", // Prod
-+  "0cb55a56-7e22-4d14-aaa2-4a4e61bfcb5a" // Dev
++  "0cb55a56-7e22-4d14-aaa2-4a4e61bfcb5a", // Dev
 +];
-\ No newline at end of file
 diff --git a/apps/comments-ui/tailwind.config.js b/apps/comments-ui/tailwind.config.js
-index 2dbae8a3a3..e1db7cd592 100644
+index 2dbae8a3a3..02a9526a16 100644
 --- a/apps/comments-ui/tailwind.config.js
 +++ b/apps/comments-ui/tailwind.config.js
 @@ -1,6 +1,11 @@
@@ -121,7 +121,7 @@ index 2dbae8a3a3..e1db7cd592 100644
 +        fontFamily: {
 +            display: ' "Barlow Condensed", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
 +            sans: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
-+            serif: '"Source Serif 4", Georgia, Times, serif',
++            serif: '"Source Serif 4", Georgia, Times, serif'
 +        },
          screens: {
              sm: '481px',
