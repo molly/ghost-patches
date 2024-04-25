@@ -25,7 +25,7 @@ index 00f4d1d64a..fc861990a1 100644
  
  module.exports = getOgImage;
 diff --git a/core/frontend/meta/schema.js b/core/frontend/meta/schema.js
-index 894b58e429..be0978f8ea 100644
+index 894b58e429..94664c0845 100644
 --- a/core/frontend/meta/schema.js
 +++ b/core/frontend/meta/schema.js
 @@ -117,6 +117,7 @@ function getHomeSchema(metaData) {
@@ -36,7 +36,7 @@ index 894b58e429..be0978f8ea 100644
          publisher: schemaPublisherObject(metaData),
          url: metaData.url,
          image: schemaImageObject(metaData.coverImage),
-@@ -167,13 +168,12 @@ function getSchema(metaData, data) {
+@@ -167,15 +168,13 @@ function getSchema(metaData, data) {
          const context = data.context ? data.context : null;
          if (_.includes(context, 'post') || _.includes(context, 'page') || _.includes(context, 'amp')) {
              return getPostSchema(metaData, data);
@@ -47,7 +47,35 @@ index 894b58e429..be0978f8ea 100644
          } else if (_.includes(context, 'author')) {
              return getAuthorSchema(metaData, data);
          }
-+        return getHomeSchema(metaData);
      }
-     return null;
+-    return null;
++    return getHomeSchema(metaData);
  }
+ 
+ module.exports = getSchema;
+diff --git a/core/frontend/meta/twitter-image.js b/core/frontend/meta/twitter-image.js
+index edcc2ea2d0..8af6193236 100644
+--- a/core/frontend/meta/twitter-image.js
++++ b/core/frontend/meta/twitter-image.js
+@@ -7,11 +7,6 @@ function getTwitterImage(data) {
+     const context = data.context ? data.context : null;
+     const contextObject = getContextObject(data, context, false);
+ 
+-    if (_.includes(context, 'home')) {
+-        const imgUrl = settingsCache.get('twitter_image') || settingsCache.get('cover_image');
+-        return (imgUrl && urlUtils.relativeToAbsolute(imgUrl)) || null;
+-    }
+-
+     if (_.includes(context, 'post') || _.includes(context, 'page') || _.includes(context, 'amp')) {
+         if (contextObject.twitter_image) {
+             return urlUtils.relativeToAbsolute(contextObject.twitter_image);
+@@ -38,7 +33,8 @@ function getTwitterImage(data) {
+         }
+     }
+ 
+-    return null;
++    const imgUrl = settingsCache.get('icon') || settingsCache.get('cover_image');
++    return (imgUrl && urlUtils.relativeToAbsolute(imgUrl)) || null;
+ }
+ 
+ module.exports = getTwitterImage;
